@@ -94,15 +94,40 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  if (contactForm) {
-    contactForm.addEventListener("submit", (e) => {
-      e.preventDefault();
-      showMessageBox(
-        "Thank you for your message! I will get back to you soon."
-      );
-      contactForm.reset();
-    });
-  }
+ if (contactForm) {
+        contactForm.addEventListener('submit', async (e) => {
+            e.preventDefault(); 
+
+            const form = e.target;
+            const formData = new FormData(form);
+            const formUrl = "https://formspree.io/f/xanjzaoj"; 
+
+            try {
+                const response = await fetch(formUrl, {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'Accept': 'application/json'
+                    }
+                });
+
+                if (response.ok) {
+                    showMessageBox('Thank you for your message! I will get back to you soon.');
+                    form.reset(); 
+                } else {
+                    const data = await response.json();
+                    if (data.errors) {
+                        showMessageBox('There was an error sending your message: ' + data.errors.map(error => error.message).join(', '));
+                    } else {
+                        showMessageBox('There was an error sending your message. Please try again.');
+                    }
+                }
+            } catch (error) {
+                console.error('Error submitting form:', error);
+                showMessageBox('Network error or problem sending message. Please try again later.');
+            }
+        });
+    }
 
   showPage("home-page");
 });
